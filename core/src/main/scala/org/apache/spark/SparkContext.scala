@@ -996,6 +996,9 @@ class SparkContext(config: SparkConf) extends Logging with ExecutorAllocationCli
     new HadoopRDD(this, conf, inputFormatClass, keyClass, valueClass, minPartitions)
   }
 
+  def broadcastHadoopConf() =
+    broadcast(new SerializableConfiguration(hadoopConfiguration))
+
   /** Get an RDD for a Hadoop file with an arbitrary InputFormat
    *
    * '''Note:''' Because Hadoop's RecordReader class re-uses the same Writable object for each
@@ -1005,18 +1008,28 @@ class SparkContext(config: SparkConf) extends Logging with ExecutorAllocationCli
    * copy them using a `map` function.
    */
   def hadoopFile[K, V](
-      path: String,
-      inputFormatClass: Class[_ <: InputFormat[K, V]],
-      keyClass: Class[K],
-      valueClass: Class[V],
-      minPartitions: Int = defaultMinPartitions): RDD[(K, V)] = withScope {
+                        path: String,
+                        inputFormatClass: Class[_ <: InputFormat[K, V]],
+                        keyClass: Class[K],
+                        valueClass: Class[V],
+                        minPartitions: Int = defaultMinPartitions): RDD[(K, V)] = withScope {
     assertNotStopped()
-    // A Hadoop configuration can be about 10 KB, which is pretty big, so broadcast it.
-    val confBroadcast = broadcast(new SerializableConfiguration(hadoopConfiguration))
+    hadoopFileWithConf[K, V](path, inputFormatClass, keyClass, valueClass,
+      broadcastHadoopConf(), minPartitions)
+  }
+
+  def hadoopFileWithConf[K, V](
+                                path: String,
+                                inputFormatClass: Class[_ <: InputFormat[K, V]],
+                                keyClass: Class[K],
+                                valueClass: Class[V],
+                                broadcastConf: Broadcast[SerializableConfiguration],
+                                minPartitions: Int = defaultMinPartitions): RDD[(K, V)] = withScope {
+    assertNotStopped()
     val setInputPathsFunc = (jobConf: JobConf) => FileInputFormat.setInputPaths(jobConf, path)
     new HadoopRDD(
       this,
-      confBroadcast,
+      broadcastConf,
       Some(setInputPathsFunc),
       inputFormatClass,
       keyClass,
