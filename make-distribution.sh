@@ -38,7 +38,7 @@ TACHYON_TGZ="tachyon-${TACHYON_VERSION}-bin.tar.gz"
 TACHYON_URL="http://tachyon-project.org/downloads/files/${TACHYON_VERSION}/${TACHYON_TGZ}"
 
 MAKE_TGZ=false
-NAME=none
+NAME=1.6.0-hive
 MVN="$SPARK_HOME/build/mvn"
 
 function exit_with_usage {
@@ -167,7 +167,7 @@ export MAVEN_OPTS="-Xmx2g -XX:MaxPermSize=512M -XX:ReservedCodeCacheSize=512m"
 # Store the command as an array because $MVN variable might have spaces in it.
 # Normal quoting tricks don't work.
 # See: http://mywiki.wooledge.org/BashFAQ/050
-BUILD_COMMAND=("$MVN" clean package -DskipTests $@)
+BUILD_COMMAND=("$MVN" clean package deploy -DskipTests $@)
 
 # Actually build the jar
 echo -e "\nBuilding with..."

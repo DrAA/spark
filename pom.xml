@@ -2545,4 +2545,19 @@
       <id>sparkr</id>
     </profile>
   </profiles>
+
+
+    <distributionManagement>
+        <repository>
+            <id>central</id>
+            <name>libs-release</name>
+            <url>https://artifactory.spotify.net/artifactory/libs-release-local</url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <name>libs-snapshot</name>
+            <url>https://artifactory.spotify.net/artifactory/libs-snapshot-local</url>
+        </snapshotRepository>
+    </distributionManagement>
+
 </project>
